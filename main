@@ -1,0 +1,87 @@
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+public class Worldarchery {
+	private static ArrayList<HaberDetay> haberDetayList;
+	public static void main(String[] args) throws InterruptedException {
+		run();
+	}
+	public static ArrayList<HaberDetay> run() throws InterruptedException{
+		haberDetayList = new ArrayList<HaberDetay>();
+		System.setProperty("webdriver.chrome.driver","yourpathto_chromedriver.exe");
+		ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--no-sandbox");
+        
+		WebDriver driver = new ChromeDriver(chromeOptions);
+		String baseUrl = "https://worldarchery.org/news";
+        driver.get(baseUrl);
+        WebElement MainElement=driver.findElement(By.className("classname"));
+        List<WebElement> element = MainElement.findElements(By.tagName("tagname"));
+       
+	    for(WebElement we:element) {
+	    	 HaberDetay haberDetay = new HaberDetay();
+	         
+	    	 //TITLE OK		             
+	    	 WebElement title=we.findElement(By.tagName("header")).findElement(By.tagName("span"));
+	    	 String HaberTitle=title.getAttribute("content");
+	    	 haberDetay.setHaberBaslik(HaberTitle);
+	    	 //System.out.println("TITLE:"+HaberTitle);
+	    	 
+	    	 // TimeUnit.SECONDS.sleep(1);    right classını görmezse aç
+	    	 //DATE OK
+		     WebElement date=we.findElement(By.className("right"));
+		     date=date.findElement(By.className("field-name-field-publish-date")).findElement(By.tagName("span"));
+		     String newsDate=date.getText();
+		     haberDetay.setYayinTarihi(newsDate);		  
+		     //System.out.println("DATE:"+newsDate);
+	
+	
+	         
+	       	 //URL OK
+	    	 WebElement rowLink = we.findElement(By.className("right")).findElement(By.className("field-name-field-subtitle"));
+	    	 String HaberLink=rowLink.findElement(By.tagName("a")).getAttribute("href");
+	         haberDetay.setHaberUrl(HaberLink);
+	         //System.out.println("LINK:"+HaberLink);	
+	         
+	         haberDetay = detay(haberDetay);
+	         haberDetayList.add(haberDetay);	 
+	      }
+
+		driver.close();
+		driver.quit();
+    		
+		return haberDetayList;
+	}
+	
+	public static HaberDetay detay(HaberDetay haberDetay){
+		ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--no-sandbox");
+		WebDriver drive = new ChromeDriver(chromeOptions);
+		drive.get(haberDetay.getHaberUrl());
+		
+		//CONTENT
+		List<WebElement> elem = drive.findElements(By.className("group-content")); //field-name-body
+		String sum ="";
+		for(WebElement icerik:elem) {
+			sum = sum + icerik.getText();
+		}
+        haberDetay.setHaberOzet(sum);
+		System.out.println("CONTENT:"+sum);
+		   
+			drive.close();	
+			drive.quit();
+			
+			return haberDetay;
+		}
+
+}
